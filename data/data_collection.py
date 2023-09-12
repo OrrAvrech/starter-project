@@ -1,19 +1,15 @@
+import pyrallis
 from pathlib import Path
 from data.utils import scrape_videos, extract_audio, transcribe_speech
+from data.data_config import DataConfig
 
 
-def main():
+@pyrallis.wrap()
+def main(cfg: DataConfig):
     dataset_dir = Path("./dataset")
 
-    # TODO: scrape videos
-    scrape_videos(extractor="ytsearch",
-                  prompt="common mistake in push ups",
-                  restrict_filenames=True,
-                  min_duration=10,
-                  max_duration=100,
-                  ext="mp4",
-                  max_total_duration=60,
-                  no_playlist=True)
+    action = "push ups"
+    scrape_videos(cfg=cfg.scraper, action=action, dataset_dir=dataset_dir)
 
     # extract audio and transcription from videos
     # for vid_path in dataset_dir.rglob("*.mp4"):

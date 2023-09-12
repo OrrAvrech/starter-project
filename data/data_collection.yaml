@@ -1,0 +1,10 @@
+scraper:
+  extractor: "ytsearch"
+  prefix_prompt: "common mistake in"
+  restrict_filenames: true
+  min_vid_duration: 20
+  max_vid_duration: 60
+  ext: "mp4"
+  no_playlist: true
+  desired_agg_duration: 120
+  quiet_mode: true
