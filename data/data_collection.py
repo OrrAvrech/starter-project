@@ -8,13 +8,15 @@ from data.data_config import DataConfig
 def main(cfg: DataConfig):
     dataset_dir = Path("./dataset")
 
-    action = "push ups"
-    scrape_videos(cfg=cfg.scraper, action=action, dataset_dir=dataset_dir)
+    actions = cfg.actions
+    for action in actions:
+        print(f"{action}:")
+        scrape_videos(cfg=cfg.scraper, action=action, dataset_dir=dataset_dir)
 
     # extract audio and transcription from videos
-    # for vid_path in dataset_dir.rglob("*.mp4"):
-    #     audio_path = extract_audio(vid_path)
-    #     transcribe_speech(audio_path)
+    for vid_path in dataset_dir.rglob("*.mp4"):
+        audio_path = extract_audio(vid_path)
+        transcribe_speech(audio_path)
         # TODO: visualize transcribed text on videos
 
 

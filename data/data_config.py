@@ -17,3 +17,4 @@ class ScraperConfig:
 @dataclass
 class DataConfig:
     scraper: ScraperConfig
+    actions: list[str]

@@ -1,10 +1,22 @@
 scraper:
   extractor: "ytsearch"
-  prefix_prompt: "common mistake in"
+  prefix_prompt: "common mistakes in"
   restrict_filenames: true
-  min_vid_duration: 20
-  max_vid_duration: 60
+  min_vid_duration: 15
+  max_vid_duration: 900
   ext: "mp4"
   no_playlist: true
-  desired_agg_duration: 120
-  quiet_mode: true
+  desired_agg_duration: 450
+  quiet_mode: false
+
+actions:
+  - push ups
+  - squats
+  - yoga
+  - golf swing
+  - ballet
+  - swimming
+  - slacklining
+  - hitting baseball
+  - strumming guitar
+  - sidekick

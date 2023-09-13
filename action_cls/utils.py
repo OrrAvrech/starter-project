@@ -1,32 +1,31 @@
 import cv2
+from pathlib import Path
 import numpy as np
-from moviepy.editor import TextClip, CompositeVideoClip
 
 
-def draw_label(frame: np.array, text: str) -> np.array:
-    # Specify the font and its characteristics
+def draw_label(frame: np.array, text: str):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 1
     font_color = (0, 0, 255)
     font_thickness = 2
 
-    # Specify the position (bottom-left corner) where you want to place the text
     position = (10, 50)  # (x, y) coordinates
-
-    # Use cv2.putText() to draw the text on the frame
     cv2.putText(frame, text, position, font, font_scale, font_color, font_thickness)
-    return frame
 
 
-# Create a function to add the text overlay to each frame
-def add_text_overlay(video_clip, text):
-    # Define the text you want to overlay
-    font_size = 40
-    font_color = 'white'
+def draw_text_on_frames(vid, text):
+    frames = []
+    for frame in vid.iter_frames(vid.fps):
+        draw_label(frame, text)
+        frames.append(frame)
+    return frames
 
-    txt_clip = TextClip(txt=text, fontsize=font_size, color=font_color)
-    txt_clip = txt_clip.set_position(('right', 'top')).set_duration(video_clip.duration)
 
-    # Overlay the text clip on the first video clip
-    video = CompositeVideoClip([video_clip, txt_clip])
-    return video
+def read_txt(filepath: Path) -> list[str]:
+    with open(str(filepath), "r") as file:
+        lines = file.readlines()
+    lines = [line.strip() for line in lines]
+    return lines
+
+
+
