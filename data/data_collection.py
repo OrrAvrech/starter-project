@@ -20,5 +20,5 @@ def main(cfg: DataConfig):
         # TODO: visualize transcribed text on videos
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

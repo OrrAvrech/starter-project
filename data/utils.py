@@ -14,11 +14,13 @@ class ASRModelZoo(NamedTuple):
 
 def scrape_videos(cfg: ScraperConfig, action: str, dataset_dir: Path, video_prefix: str = "video"):
     prompt = cfg.prefix_prompt + action
-    ydl_opts = {"restrictfilenames": cfg.restrict_filenames,
-                "format": cfg.ext,
-                "noplaylist": cfg.no_playlist,
-                "quiet": cfg.quiet_mode,
-                "outtmpl": {"default": f"{dataset_dir / action / video_prefix}/%(title)s.%(ext)s"}}
+    ydl_opts = {
+        "restrictfilenames": cfg.restrict_filenames,
+        "format": cfg.ext,
+        "noplaylist": cfg.no_playlist,
+        "quiet": cfg.quiet_mode,
+        "outtmpl": {"default": f"{dataset_dir / action / video_prefix}/%(title)s.%(ext)s"},
+    }
 
     agg_duration = cfg.desired_agg_duration
     max_num_urls = agg_duration // cfg.min_vid_duration
@@ -46,4 +48,3 @@ def transcribe_speech(audio_path: Path, text_prefix: str = "text"):
     filepath = text_dir / f"{audio_path.stem}.json"
     with open(filepath, "w") as fp:
         json.dump(transcription, fp)
-
