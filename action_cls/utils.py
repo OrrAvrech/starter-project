@@ -1,6 +1,21 @@
 import cv2
+import yaml
+import torch
 from pathlib import Path
 import numpy as np
+from pytorchvideo.transforms import Normalize
+
+
+class InverseNormalize(Normalize):
+    def __init__(self, mean, std):
+        mean = torch.as_tensor(mean)
+        std = torch.as_tensor(std)
+        std_inv = 1 / (std + torch.finfo(torch.float32).eps)
+        mean_inv = -mean * std_inv
+        super().__init__(mean=mean_inv, std=std_inv)
+
+    def __call__(self, tensor):
+        return super().__call__(tensor.clone())
 
 
 def draw_label(frame: np.array, text: str):
@@ -37,3 +52,9 @@ def read_txt(filepath: Path) -> list[str]:
         lines = file.readlines()
     lines = [line.strip() for line in lines]
     return lines
+
+
+def load_yaml(filepath: Path) -> dict:
+    with open(filepath, "r") as fp:
+        data = yaml.safe_load(fp)
+    return data

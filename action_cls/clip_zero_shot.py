@@ -1,10 +1,24 @@
 import torch
+import random
+import pyrallis
 from pathlib import Path
 from typing import NamedTuple
-from moviepy.editor import VideoFileClip, concatenate_videoclips, ImageSequenceClip
+from dataclasses import dataclass
+from moviepy.editor import VideoFileClip, ImageSequenceClip, concatenate_videoclips
 from transformers import CLIPProcessor, CLIPModel, XCLIPProcessor, XCLIPModel
 import numpy as np
-from action_cls.utils import read_txt, draw_text_on_frames
+from action_cls.utils import read_txt, draw_text_on_frames, load_yaml
+
+
+@dataclass
+class ZeroShotConfig:
+    data_config_path: Path
+    vid_dir: Path
+    num_frames: int
+    sample_rate: int
+    random_sample: bool
+    window_size: float
+    output_dir: Path
 
 
 class CLIPModelZoo(NamedTuple):
@@ -13,7 +27,8 @@ class CLIPModelZoo(NamedTuple):
 
 
 class XCLIPModelZoo(NamedTuple):
-    xclip_16_zs = "microsoft/xclip-base-patch16-zero-shot"
+    xclip_patch16_32_zs = "microsoft/xclip-base-patch16-zero-shot"
+    xclip_patch32_8 = "microsoft/xclip-base-patch32"
 
 
 def get_clip_outputs(frames: list[np.array], texts: list[str]) -> torch.float32:
@@ -21,8 +36,8 @@ def get_clip_outputs(frames: list[np.array], texts: list[str]) -> torch.float32:
     processor = CLIPProcessor.from_pretrained(CLIPModelZoo.clip_vit_base_16)
 
     inputs = processor(text=texts, images=frames, return_tensors="pt", padding=True)
-
-    outputs = model(**inputs)
+    with torch.no_grad():
+        outputs = model(**inputs)
     logit_scale = model.logit_scale.exp()
 
     # take the average image embedding over vid frames
@@ -37,23 +52,34 @@ def get_clip_outputs(frames: list[np.array], texts: list[str]) -> torch.float32:
 
 
 def get_xclip_outputs(frames: list[np.array], texts: list[str]) -> torch.float32:
-    model = XCLIPModel.from_pretrained(XCLIPModelZoo.xclip_16_zs)
-    processor = XCLIPProcessor.from_pretrained(XCLIPModelZoo.xclip_16_zs)
+    model = XCLIPModel.from_pretrained(XCLIPModelZoo.xclip_patch32_8)
+    processor = XCLIPProcessor.from_pretrained(XCLIPModelZoo.xclip_patch32_8)
 
     inputs = processor(text=texts, videos=frames, return_tensors="pt", padding=True)
-    outputs = model(**inputs)
+    with torch.no_grad():
+        outputs = model(**inputs)
 
     probs = outputs.logits_per_video.softmax(dim=1)
     return probs
 
 
-def viz_zero_shot_predictions(
-    vid_path: Path, label_map: dict[str, str], num_frames: int, sample_rate: float, output_dir: Path
-):
+def load_trim_vid(vid_path: Path, window_size: float, random_sample: bool):
     vid = VideoFileClip(str(vid_path))
-    # vid = vid.subclip(0, 8)
+    start_time = 0
+    if random_sample and vid.duration > window_size:
+        start_time = random.uniform(0, vid.duration - window_size)
+    end_time = start_time + window_size
+    subclip = vid.subclip(start_time, end_time)
+    return subclip
+
+
+def viz_zero_shot_predictions(vid_path: Path, label_map: dict[str, str], cfg: ZeroShotConfig):
+    num_frames = cfg.num_frames
+    sample_rate = cfg.sample_rate
+    output_dir = cfg.output_dir
+
+    vid = load_trim_vid(vid_path, cfg.window_size, cfg.random_sample)
     clip_duration = num_frames * sample_rate / vid.fps
-    true_exercise = vid_path.parents[1].name
 
     t_start = 0
     labeled_videos = []
@@ -71,33 +97,30 @@ def viz_zero_shot_predictions(
         text_prompts = list(label_map.keys())
         probs = get_xclip_outputs(list(input_frames), text_prompts)
         argmax_prob = int(probs.argmax(dim=1).numpy()[0])
+        max_prob = torch.max(probs)
         max_prompt = text_prompts[argmax_prob]
         t_start += clip_duration
 
         label = label_map[max_prompt]
-        print(label)
-        subclip_labeled = ImageSequenceClip(draw_text_on_frames(subclip, label), fps=subclip.fps)
+        text_to_draw = f"{label}:{max_prob:.2f}"
+        print(f"{label}:{max_prob:.2f}")
+        subclip_labeled = ImageSequenceClip(
+            draw_text_on_frames(subclip, text_to_draw), fps=subclip.fps
+        )
         labeled_videos.append(subclip_labeled)
+        subclip.close()
+    vid.close()
 
     labeled_clip = concatenate_videoclips(labeled_videos)
-    output_dir.mkdir(exist_ok=True)
-    labeled_clip.write_videofile(str(output_dir / f"viz_{vid_path.name}"))
+    output_ex_dir = output_dir / vid_path.parents[1].stem
+    output_ex_dir.mkdir(exist_ok=True, parents=True)
+    labeled_clip.write_videofile(str(output_ex_dir / vid_path.name))
 
 
-def main():
+@pyrallis.wrap()
+def main(cfg: ZeroShotConfig):
+    exercises = load_yaml(cfg.data_config_path).get("actions", list())
     other_exercises = read_txt(Path("label_map_600.txt"))
-    exercises = [
-        "push ups",
-        "squats",
-        "yoga",
-        "golf swing",
-        "ballet",
-        "swimming",
-        "slacklining",
-        "hitting baseball",
-        "strumming guitar",
-        "sidekick",
-    ]
     label_map = {}
     for ex in exercises + other_exercises:
         label = ex
@@ -105,13 +128,9 @@ def main():
             label = "other"
         label_map[ex] = label
 
-    video_path = Path(
-        "../dataset/yoga/video/1_MISTAKE_Made_by_Yoga_Students_DON_T_Make_This_Mistake.mp4"
-    )
-    output_dir = Path("./results")
-    viz_zero_shot_predictions(
-        video_path, label_map, num_frames=32, sample_rate=1, output_dir=output_dir
-    )
+    for i, video_path in enumerate(cfg.vid_dir.rglob("*.mp4")):
+        if i in [1, 2, 3]:
+            viz_zero_shot_predictions(video_path, label_map, cfg)
 
 
 if __name__ == "__main__":
