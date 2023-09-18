@@ -38,13 +38,13 @@ def extract_audio(vid_path: Path, audio_prefix: str = "audio", ext: str = "wav")
     return filepath
 
 
-def transcribe_speech(audio_path: Path, text_prefix: str = "text"):
+def transcribe_speech(audio_path: Path, chunk_len_s, text_prefix: str = "text"):
     # Load pre-trained ASR model
     transcriber = pipeline("automatic-speech-recognition", model=ASRModelZoo.whisper_small)
-    transcription = transcriber(str(audio_path))
+    transcription = transcriber(str(audio_path), return_timestamps=True, chunk_length_s=chunk_len_s)
 
     text_dir = audio_path.parents[1] / text_prefix
     text_dir.mkdir(exist_ok=True)
     filepath = text_dir / f"{audio_path.stem}.json"
     with open(filepath, "w") as fp:
-        json.dump(transcription, fp)
+        json.dump(transcription["chunks"], fp)

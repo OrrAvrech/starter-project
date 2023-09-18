@@ -1,3 +1,4 @@
+from typing import Optional
 from dataclasses import dataclass
 
 
@@ -15,6 +16,12 @@ class ScraperConfig:
 
 
 @dataclass
+class Transcriber:
+    chunk_length_s: Optional[int]
+
+
+@dataclass
 class DataConfig:
     scraper: ScraperConfig
+    transcriber: Transcriber
     actions: list[str]

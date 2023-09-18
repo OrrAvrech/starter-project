@@ -9,14 +9,14 @@ def main(cfg: DataConfig):
     dataset_dir = Path("./dataset")
 
     actions = cfg.actions
-    for action in actions:
-        print(f"{action}:")
-        scrape_videos(cfg=cfg.scraper, action=action, dataset_dir=dataset_dir)
+    # for action in actions:
+    #     print(f"{action}:")
+    #     scrape_videos(cfg=cfg.scraper, action=action, dataset_dir=dataset_dir)
 
     # extract audio and transcription from videos
     for vid_path in dataset_dir.rglob("*.mp4"):
         audio_path = extract_audio(vid_path)
-        transcribe_speech(audio_path)
+        transcribe_speech(audio_path, cfg.transcriber.chunk_length_s)
         # TODO: visualize transcribed text on videos
 
 

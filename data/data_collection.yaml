@@ -9,6 +9,9 @@ scraper:
   desired_agg_duration: 450
   quiet_mode: false
 
+transcriber:
+  chunk_length_s: null
+
 actions:
   - push ups
   - squats
