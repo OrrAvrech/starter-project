@@ -121,6 +121,7 @@ def viz_zero_shot_predictions(vid_path: Path, label_map: dict[str, str], cfg: Ze
 def main(cfg: ZeroShotConfig):
     exercises = load_yaml(cfg.data_config_path).get("actions", list())
     other_exercises = read_txt(Path("label_map_600.txt"))
+
     label_map = {}
     for ex in exercises + other_exercises:
         label = ex
@@ -129,8 +130,10 @@ def main(cfg: ZeroShotConfig):
         label_map[ex] = label
 
     for i, video_path in enumerate(cfg.vid_dir.rglob("*.mp4")):
-        if i in [1, 2, 3]:
+        try:
             viz_zero_shot_predictions(video_path, label_map, cfg)
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":
