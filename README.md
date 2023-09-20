@@ -18,13 +18,42 @@ Working environment is now ready to use. The recommended way to add new packages
 ```commandline
 $ pip-compile env/requirements.in
 ```
-This line will generate an update version of the project's `requirements.txt` file, which can be easily synced to the virtual environment with `pip-sync`.
+This line will generate an updated version of the project's `requirements.txt` file, which can be easily synced to the virtual environment with `pip-sync`.
 
 ## Data
 The data collection script scrapes videos from YT using [yt-dlp](https://github.com/yt-dlp/yt-dlp), and for each video it extracts the audio and transcribes the speech.
 `cd data` and execute the following:
 ```commandline
 $ python data_collection.py --config_path data_collection.yaml
+```
+
+`data_collection.yaml` config example:
+```yaml
+scraper: # yt-dlp API
+  extractor: "ytsearch"
+  prefix_prompt: "common mistakes in"
+  restrict_filenames: true
+  min_vid_duration: 15
+  max_vid_duration: 900
+  ext: "mp4"
+  no_playlist: true
+  desired_agg_duration: 450
+  quiet_mode: false
+
+transcriber: # ASR pipeline 
+  chunk_length_s: 10
+
+actions:
+  - push ups
+  - squats
+  - yoga
+  - golf swing
+  - ballet
+  - swimming
+  - slacklining
+  - hitting baseball
+  - strumming guitar
+  - sidekick
 ```
 
 ## Zero-shot classification
