@@ -9,9 +9,9 @@ def main(cfg: DataConfig):
     dataset_dir = Path("./dataset")
 
     actions = cfg.actions
-    # for action in actions:
-    #     print(f"{action}:")
-    #     scrape_videos(cfg=cfg.scraper, action=action, dataset_dir=dataset_dir)
+    for action in actions:
+        print(f"{action}:")
+        scrape_videos(cfg=cfg.scraper, action=action, dataset_dir=dataset_dir)
 
     # extract audio and transcription from videos
     for vid_path in dataset_dir.rglob("*.mp4"):

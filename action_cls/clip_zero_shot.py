@@ -120,7 +120,7 @@ def viz_zero_shot_predictions(vid_path: Path, label_map: dict[str, str], cfg: Ze
 @pyrallis.wrap()
 def main(cfg: ZeroShotConfig):
     exercises = load_yaml(cfg.data_config_path).get("actions", list())
-    other_exercises = read_txt(Path("label_map_600.txt"))
+    other_exercises = read_txt(Path("other_exercises.txt"))
 
     label_map = {}
     for ex in exercises + other_exercises:
