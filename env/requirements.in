@@ -1,0 +1,15 @@
+yt-dlp
+numpy
+opencv-python
+ffmpeg-python
+torch
+torchvision
+torchaudio
+pytorchvideo
+moviepy
+transformers
+pyrallis
+PyYAML
+soundfile
+lightning
+black

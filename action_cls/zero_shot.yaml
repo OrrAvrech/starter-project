@@ -1,5 +1,5 @@
-data_config_path: "/Users/orrav/Documents/projects/mia_starter_project/data/data_collection.yaml"
 vid_dir: "/Users/orrav/Documents/projects/mia_starter_project/dataset"
+data_config_path: "/Users/orrav/Documents/projects/mia_starter_project/data/data_collection.yaml"
 num_frames: 8
 sample_rate: 5
 random_sample: true

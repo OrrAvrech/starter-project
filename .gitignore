@@ -1,6 +1,5 @@
 *.DS_Store
 .idea
-env/
 dataset/
 __pycache__
 *.mp4
