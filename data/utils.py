@@ -13,9 +13,15 @@ class ASRModelZoo(NamedTuple):
 
 
 def scrape_videos(cfg: ScraperConfig, action: str, dataset_dir: Path, video_prefix: str = "video"):
+    def filter_videos(info_dict):
+        duration = info_dict.get('duration')
+        if duration and (duration < cfg.min_vid_duration or duration > cfg.max_vid_duration):
+            return "The video is either too short or too long"
+
     prompt = cfg.prefix_prompt + action
     ydl_opts = {
         "restrictfilenames": cfg.restrict_filenames,
+        "match_filter": filter_videos,
         "format": cfg.ext,
         "noplaylist": cfg.no_playlist,
         "quiet": cfg.quiet_mode,
@@ -27,6 +33,7 @@ def scrape_videos(cfg: ScraperConfig, action: str, dataset_dir: Path, video_pref
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         error = ydl.download(f"{cfg.extractor}{max_num_urls}:{prompt}")
+        print(error)
 
 
 def extract_audio(vid_path: Path, audio_prefix: str = "audio", ext: str = "wav") -> Path:
