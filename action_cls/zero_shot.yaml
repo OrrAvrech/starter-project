@@ -1,7 +1,7 @@
-vid_dir: "/Users/orrav/Documents/projects/mia_starter_project/dataset"
+vid_dir: "/Users/orrav/Documents/projects/mia_starter_project/dataset_small/validation"
 data_config_path: "/Users/orrav/Documents/projects/mia_starter_project/data/data_collection.yaml"
 num_frames: 8
-sample_rate: 5
-random_sample: true
-window_size: 15
-output_dir: "/Users/orrav/Documents/projects/mia_starter_project/action_cls/results"
+sample_rate: 6
+random_sample: false
+window_size: 180
+output_dir: "/Users/orrav/Documents/projects/mia_starter_project/dataset_small_clean/validation"

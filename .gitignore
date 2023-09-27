@@ -2,8 +2,10 @@
 .idea
 dataset/
 dataset_small/
+dataset_small_clean/
 __pycache__
 *.mp4
 *.wav
 *.jpeg
 *.png
+*.gif

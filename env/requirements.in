@@ -13,3 +13,4 @@ PyYAML
 soundfile
 lightning
 black
+matplotlib
